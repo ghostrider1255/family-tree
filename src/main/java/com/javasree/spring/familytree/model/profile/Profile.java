@@ -24,8 +24,8 @@ public class Profile implements Serializable{
 	private String profileName;
 	private String firstName;
 	private String lastName;
-	
 	private String gender;
+	private Long parentId;
 	
 	public Long getProfileId() {
 		return profileId;
@@ -56,6 +56,12 @@ public class Profile implements Serializable{
 	}
 	public void setGender(String gender) {
 		this.gender = gender;
+	}
+	public Long getParentId() {
+		return parentId;
+	}
+	public void setParentId(Long parentId) {
+		this.parentId = parentId;
 	}
 	
 	@Override

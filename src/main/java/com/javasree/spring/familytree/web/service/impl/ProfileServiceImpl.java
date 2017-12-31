@@ -1,5 +1,7 @@
 package com.javasree.spring.familytree.web.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +16,13 @@ public class ProfileServiceImpl implements ProfileService{
 	private ProfileDaoImpl profileDao;
 
 	@Override
-	public void save(Profile profile) {
-		profileDao.save(profile);
+	public Profile save(Profile profile) {
+		return profileDao.save(profile);
+	}
+
+	@Override
+	public List<Profile> findAll() {
+		return profileDao.findAll();
 	}
 
 }
