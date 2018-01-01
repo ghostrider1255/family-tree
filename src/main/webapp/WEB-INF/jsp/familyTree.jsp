@@ -43,16 +43,22 @@
 							type: "POST",
 							url: "/profile/add",
 							dataType: "json",
-							data: { profileName: p_profileName,
+							contentType: "application/json",
+							data: { 
+									profileName: p_profileName,
 									firstName: p_firstname,
 									lastName: p_lastname,
-									p_gender: gender},
-							success: function(response){
+									gender: p_gender
+							},
+							success: function(data, textStatus, jqXHR){
 								alert('profile added')
+								console.log(textStatus);
 								dialog.dialog("close");
 							},
-							error: alert('error adding profile'),
-							fail: alert('fail adding profile')
+							error: function(jqXhr, textStatus, errorThrown){
+								console.log(textStatus);
+								 alert('error:' +textStatus + '\n:' +errorThrown);
+							}
 						});
 						
 						dialog.dialog( "close" );
@@ -100,9 +106,11 @@
 					case "add": 
 						/* get items collection */
 						var items = jQuery("#orgdiagram").orgDiagram("option", "items");
-						//alert('existing number of nodes are '+items.length);
+						alert('existing number of nodes are '+items.length);
 						/* create new item */
 						dialog.dialog( "open" );
+						
+						alert('end popup model form');
 						var newItem;
 						//end creating new item
 						
@@ -110,7 +118,7 @@
 						items.push(newItem);
 						jQuery("#orgdiagram").orgDiagram({
 							items: items,
-							cursorItem: newItem.id
+							//cursorItem: newItem.id
 						});
 						jQuery("#orgdiagram").orgDiagram("update", primitives.orgdiagram.UpdateMode.Refresh);
 						break;

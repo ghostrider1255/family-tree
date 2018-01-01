@@ -35,15 +35,16 @@ public class ProfileController {
 	@RequestMapping(value=PROFILE_VIEW, method=RequestMethod.GET)
 	public String viewProfile(Model model){
 		Profile profile = new Profile();
-		profile.setProfileId(new Long(0));
+		profile.setProfileId(Long.valueOf(0));
 		model.addAttribute("profile", profile);
 		return "profilePage";
 	}
 	
-	@RequestMapping(value=SAVE_PROFILE, method = RequestMethod.POST, produces= MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value=SAVE_PROFILE, method = RequestMethod.POST, 
+			consumes = MediaType.APPLICATION_JSON_VALUE , produces= MediaType.APPLICATION_JSON_VALUE)
 	public String saveProfile(@ModelAttribute("profile") Profile profile,BindingResult result,Model model){
-		//profile.setGender("MALE");
-		profileService.save(profile);
+		Profile newProfile = profileService.save(profile);
+		model.addAttribute("profile", newProfile);
 		return "profilePage";
 	}
 	
@@ -95,57 +96,4 @@ public class ProfileController {
 		}
 		return nodes;
 	}
-	
-	private List<TreeNode> getMockNodesList(){
-		
-		List<TreeNode> nodesList = new ArrayList<>();
-		
-		TreeNode node = new TreeNode();
-		node.setId(0);
-		node.setTitle("Parent");
-		node.setParent(null);
-		node.setDescription("Parent");
-		node.setPhone("999-999-9999");
-		node.setEmailId("abc@xyz.com");
-		nodesList.add(node);
-
-		node = new TreeNode();
-		node.setId(1);
-		node.setParent(new Long(0));
-		node.setTitle("Child One");
-		node.setDescription("Child One");
-		node.setPhone("888-888-8888");
-		node.setEmailId("bcd@xyz.com");
-		nodesList.add(node);
-		
-		node = new TreeNode();
-		node.setId(2);
-		node.setParent(new Long(0));
-		node.setTitle("Child TWo");
-		node.setDescription("Child Two");
-		node.setPhone("777-777-7777");
-		node.setEmailId("efg@xyz.com");
-		nodesList.add(node);
-		
-		node = new TreeNode();
-		node.setId(4);
-		node.setParent(new Long(0));
-		node.setTitle("Child Three");
-		node.setDescription("Child Three");
-		node.setPhone("666-666-6666");
-		node.setEmailId("ttt@xyz.com");
-		nodesList.add(node);
-		
-		node = new TreeNode();
-		node.setId(3);
-		node.setParent(new Long(2));
-		node.setTitle("grand child");
-		node.setDescription("Grand Child");
-		node.setPhone("777-777-5555");
-		node.setEmailId("efg@xyz.com");
-		nodesList.add(node);
-		
-		return nodesList;
-	}
-
 }

@@ -21,8 +21,7 @@ public class ProfileDaoImpl implements ProfileDao{
 	
 	@Override
 	public Profile save(Profile profile) {
-		Profile newProfile =profileRepository.save(profile);
-		return newProfile;
+		return profileRepository.save(profile);
 	}
 
 	@Override
