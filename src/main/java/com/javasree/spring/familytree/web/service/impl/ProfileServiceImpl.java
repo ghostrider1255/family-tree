@@ -25,4 +25,15 @@ public class ProfileServiceImpl implements ProfileService{
 		return profileDao.findAll();
 	}
 
+	@Override
+	public void delete(Long profileId){
+		profileDao.delete(profileId);
+	}
+
+	@Override
+	public List<Profile> findByParentId(Long parentId) {
+		return profileDao.findByParentId(parentId);
+	}
+	
+	
 }

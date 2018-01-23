@@ -1,8 +1,9 @@
 package com.javasree.spring.familytree.web;
 
-import static com.javasree.spring.familytree.web.utils.URLConstant.FAMILY_TREE_VIEW;
+import static com.javasree.spring.familytree.web.utils.URLConstant.VIEW_FAMILY_TREE;
 import static com.javasree.spring.familytree.web.utils.URLConstant.PROFILE_VIEW;
 import static com.javasree.spring.familytree.web.utils.URLConstant.SAVE_PROFILE;
+import static com.javasree.spring.familytree.web.utils.URLConstant.DELETE_PROFILE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javasree.spring.familytree.model.profile.Profile;
+import com.javasree.spring.familytree.web.dto.ResponseDto;
 import com.javasree.spring.familytree.web.dto.TreeNode;
 import com.javasree.spring.familytree.web.service.ProfileService;
 
@@ -42,13 +45,36 @@ public class ProfileController {
 	
 	@RequestMapping(value=SAVE_PROFILE, method = RequestMethod.POST, 
 			consumes = MediaType.APPLICATION_JSON_VALUE , produces= MediaType.APPLICATION_JSON_VALUE)
-	public String saveProfile(@ModelAttribute("profile") Profile profile,BindingResult result,Model model){
+	@ResponseBody
+	public ResponseDto saveProfile(@RequestBody Profile profile,Model model){
 		Profile newProfile = profileService.save(profile);
 		model.addAttribute("profile", newProfile);
-		return "profilePage";
+		ResponseDto response = new ResponseDto();
+		response.setMsg("success");
+		response.setCode("200");
+		response.setObject(getNodes());
+		return response;
 	}
 	
-	@RequestMapping(value=FAMILY_TREE_VIEW, method=RequestMethod.GET, produces= MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = DELETE_PROFILE, method = RequestMethod.DELETE, 
+			produces= MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseDto deleteProfile(@PathVariable("profileId") String profileId){
+		ResponseDto response = new ResponseDto();
+		if(profileId!=null && profileId.trim().length()>0){
+			profileService.delete(Long.parseLong(profileId));
+			response.setMsg("success");
+			response.setCode("200");
+			response.setObject(getNodes());
+		}
+		else{
+			response.setMsg("error");
+			response.setCode("500");
+		}
+		return response;
+	}
+	
+	@RequestMapping(value=VIEW_FAMILY_TREE, method=RequestMethod.GET, produces= MediaType.APPLICATION_JSON_VALUE)
 	public String viewFamilyTree(Model model){
 		List<TreeNode> nodesList = null;
 		nodesList = getNodes();
@@ -68,7 +94,7 @@ public class ProfileController {
 		node.setTitle(profile.getFirstName());
 		node.setDescription(profile.getProfileName());
 		node.setParent(profile.getParentId());
-		
+		node.setGender(profile.getGender());
 		return node;
 	}
 	

@@ -37,7 +37,15 @@
 		<appender-ref ref="console"/>
 		<appender-ref ref="fileAppender"/>
 	</logger>
-	<logger name="com.sreepapers.app.web" level="DEBUG" additivity="false">
+	<logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+		<appender-ref ref="console"/>
+		<appender-ref ref="fileAppender"/>
+	</logger>
+	<logger name="org.hibernate.type" level="TRACE" additivity="false">
+		<appender-ref ref="console"/>
+		<appender-ref ref="fileAppender"/>
+	</logger>
+	<logger name="com.javasree.spring.familytree" level="DEBUG" additivity="false">
 		<appender-ref ref="console"/>
 		<appender-ref ref="fileAppender"/>
 	</logger>

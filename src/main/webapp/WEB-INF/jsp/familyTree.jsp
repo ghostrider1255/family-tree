@@ -24,6 +24,15 @@
 	<script type="text/javascript">
 		jQuery(document).ready(function () {
 			var dialog, form;
+			var treeNodes = ${items};
+        	var options = new primitives.orgdiagram.Config();
+        	var items = [];
+        	var buttons = [];
+        	
+			$('form').on('submit', function(e){
+				e.preventDefault();
+				return false;
+			});
 			
 			dialog = $("#create-Profile-form").dialog({
 				autoOpen: false,
@@ -33,34 +42,33 @@
 				buttons: {
 			        "Create an Profile": function(){
 			        	
-			        	alert('adding profile to the tree')
-			        	var p_profileName = $("#in_profileName"),
-						p_firstname = $("#in_firstName"),
-						p_lastname = $("#in_lastName"),
-						p_gender = $("#in_gender");
-						
+			        	var profileData = {};
+			        	profileData.profileName = $("#in_profileName").val();
+			        	profileData.firstName = $("#in_firstName").val();
+			        	profileData.lastName = $("#in_lastName").val();
+			        	profileData.gender = $("#in_gender").val(),
+			        	profileData.parentId = $("#in_parentId").val();
+
 			        	$.ajax({
 							type: "POST",
-							url: "/profile/add",
-							dataType: "json",
-							contentType: "application/json",
-							data: { 
-									profileName: p_profileName,
-									firstName: p_firstname,
-									lastName: p_lastname,
-									gender: p_gender
-							},
-							success: function(data, textStatus, jqXHR){
-								alert('profile added')
-								console.log(textStatus);
+							url: "../profile/save",
+							async: true,
+							headers: {
+			                    'Accept': 'application/json',
+			                    'Content-Type': 'application/json'
+			                },
+							data: JSON.stringify(profileData),
+							success: function(result){
+								console.log(result);
 								dialog.dialog("close");
+								items = treeNodesToItems(result.object);
+								updateTreeWithItems(items);
 							},
 							error: function(jqXhr, textStatus, errorThrown){
 								console.log(textStatus);
 								 alert('error:' +textStatus + '\n:' +errorThrown);
 							}
 						});
-						
 						dialog.dialog( "close" );
 			        },
 			        Cancel: function() {
@@ -68,30 +76,18 @@
 			        }
 			      },
 			      close: function() {
-			        form[ 0 ].reset();
-			        allFields.removeClass( "ui-state-error" );
+			        //form[ 0 ].reset();
+			        //allFields.removeClass( "ui-state-error" );
 			      }
 			});
 			
 			dialog.dialog("close");
 			
-			var treeNodes = ${items};
-        	var options = new primitives.orgdiagram.Config();
-        	var items = [];
-        	var buttons = [];
 			buttons.push(new primitives.orgdiagram.ButtonConfig("add", "ui-icon-person", "Add"));
 			buttons.push(new primitives.orgdiagram.ButtonConfig("delete", "ui-icon-close", "Delete"));
-			
-        	jQuery.each(treeNodes, function(index , val){
-        		items.push(
-        				new primitives.orgdiagram.ItemConfig({
-        					id: val.id,
-        					parent: val.parent,
-        					title: val.title,
-        					description: val.description,
-        					image: "${var_alpha}/../male.png"
-        				}));
-        	});
+        	        	
+        	items = treeNodesToItems(treeNodes);
+        	
 			options.pageFitMode = primitives.common.PageFitMode.None;
 			options.items = items;
 			options.buttons = buttons;			
@@ -99,28 +95,37 @@
 			options.hasSelectorCheckbox = primitives.common.Enabled.False;
 			options.onButtonClick = function (e, data) {
 				switch (data.name) {
-					
-					case "delete": alert('clicked on delete');
-						jQuery("#orgdiagram").orgDiagram("update", primitives.orgdiagram.UpdateMode.Refresh);
+					case "delete": //alert('clicked on delete:'+JSON.stringify(data.context));
+							if(data.context.parent==null || data.context.parent==''){
+								alert('you can not delete the parent node')
+							}
+							else{
+								$.ajax({
+									type: "DELETE",
+									url: "../profile/delete/"+data.context.id,
+									//dataType: "json",
+									headers: {
+				                	    'Accept': 'application/json',
+				                    	'Content-Type': 'application/json'
+				                	} ,
+									success: function(result){
+										items = treeNodesToItems(result.object);
+										updateTreeWithItems(items);
+										console.log(result);
+									},
+									error: function(jqXhr, textStatus, errorThrown){
+										console.log(textStatus);
+										alert('error:' +textStatus + '\n:' +errorThrown);
+									}
+								});
+							}
 						break;
 					case "add": 
 						/* get items collection */
-						var items = jQuery("#orgdiagram").orgDiagram("option", "items");
-						alert('existing number of nodes are '+items.length);
+						//var items = jQuery("#orgdiagram").orgDiagram("option", "items");
 						/* create new item */
+						$('#in_parentId').val(data.context.id);
 						dialog.dialog( "open" );
-						
-						alert('end popup model form');
-						var newItem;
-						//end creating new item
-						
-						/* add it to items collection and put it back to chart, actually it is the same reference*/
-						items.push(newItem);
-						jQuery("#orgdiagram").orgDiagram({
-							items: items,
-							//cursorItem: newItem.id
-						});
-						jQuery("#orgdiagram").orgDiagram("update", primitives.orgdiagram.UpdateMode.Refresh);
 						break;
 				}
 			};
@@ -132,6 +137,31 @@
 			$("#btn130").button().click(function () { onScale(1.3); });
 		});
 
+		function treeNodesToItems(treeNodes){
+			var new_items = [];
+			jQuery.each(treeNodes, function(index , val){
+				new_items.push(
+        				new primitives.orgdiagram.ItemConfig({
+        					id: val.id,
+        					parent: val.parent,
+        					title: val.title,
+        					description: val.description,
+        					image: "${var_alpha}/../"+val.gender+".png"
+        				}));
+        	});
+			
+			return new_items;
+		}
+		
+		function updateTreeWithItems(items){
+			//alert('updating tree graph');
+			jQuery("#orgdiagram").orgDiagram({
+				items: items
+			});
+			jQuery("#orgdiagram").orgDiagram("update", /*Refresh: use fast refresh to update chart*/ primitives.orgdiagram.UpdateMode.Refresh);
+		}
+		
+		
 		function onScale(scale) {
 			if (scale != null) {
 				jQuery("#orgdiagram").orgDiagram({ scale: scale });
@@ -145,9 +175,8 @@
 	<div id="create-Profile-form" title="Create new user">
 		<p class="validateTips">All form fields are required.</p>
 		
-		<c:url var="addAction" value="/profile/add" />
 		
-		<form:form action="${addAction}" commandName="profile" method="POST">
+		<form:form commandName="profile">
 			<table>
 				<c:if test="${!empty profile.profileId && profile.profileId!=0}">
 					<tr>
@@ -162,6 +191,14 @@
 						</td> 
 					</tr>
 				</c:if>
+				<tr>
+					<td>
+						
+					</td>
+					<td>
+						<form:hidden id="in_parentId" path="parentId" />
+					</td> 
+				</tr>
 				<tr>
 					<td>
 						<form:label path="profileName">
@@ -205,18 +242,6 @@
 						</form:select>
 					</td>
 				</tr>
-				<%-- <tr>
-					<td colspan="2">
-						<c:if test="${!empty profile.profileId && profile.profileId!=0}">
-							<input type="submit"
-								value="<spring:message text="Edit Profile"/>" />
-						</c:if>
-						<c:if test="${profile.profileId==0 || empty profile.profileId}">
-							<input type="submit"
-								value="<spring:message text="Add Profile"/>" />
-						</c:if>
-					</td>
-				</tr> --%>
 			</table>	
 		</form:form>
 		

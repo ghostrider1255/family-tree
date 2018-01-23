@@ -9,4 +9,8 @@ public interface ProfileService {
 	public Profile save(Profile profile);
 	
 	public List<Profile> findAll();
+	
+	public List<Profile> findByParentId(Long parentId);
+	
+	public void delete(Long profileId);
 }

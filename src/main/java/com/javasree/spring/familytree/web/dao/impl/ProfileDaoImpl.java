@@ -29,4 +29,22 @@ public class ProfileDaoImpl implements ProfileDao{
 		return profileRepository.findAll();
 	}
 
+	@Override
+	public void delete(Long profileId){
+		List<Profile> children = this.findByParentId(profileId);
+		for(Profile profile: children){
+			if(profileRepository.existsByParentId(profile.getProfileId())){
+				this.delete(profile.getProfileId());
+			}
+			else{
+				profileRepository.delete(profile.getProfileId());
+			}
+		}
+		profileRepository.delete(profileId);
+	}
+
+	@Override
+	public List<Profile> findByParentId(Long parentId) {
+		return profileRepository.findByParentId(parentId);
+	}
 }
